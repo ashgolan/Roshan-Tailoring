@@ -222,7 +222,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({
     storeName: "", storePhone: "", storeAddress: "",
     footerText: "", bidFooter: "",
-    maamValue: "18", masValue: "2.5"   // ✅ תיקון: 18 במקום 17
+    maamValue: "18", masValue: "5"   // ✅ תיקון: 18 במקום 17
   });
   const [secForm, setSecForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const { user: currentUser } = useAuthStore();
@@ -241,7 +241,7 @@ export default function SettingsPage() {
         footerText: settings.footerText || "",
         bidFooter: settings.bidFooter || "",
         maamValue: String(settings.maamValue || 18),   // ✅ תיקון: 18 במקום 17
-        masValue: String(settings.masValue || 2.5),
+        masValue: String(settings.masValue || 5),
       });
       setLogoPreview(settings.logoBase64 || "");
     }

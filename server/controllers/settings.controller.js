@@ -1,4 +1,5 @@
 import { Setting } from "../models/setting.model.js";
+import { TaxValues } from "../models/taxValues.model.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import multer from "multer";
@@ -48,12 +49,22 @@ export const getMySettings = async (req, res) => {
         createdBy: req.user._id,
         storeName: "מתפרת מלאק",
         maamValue: "18",
-        masValue: "2.5",
+        masValue: "5",
       });
     }
-    // ✅ תיקון: fallback רק אם הערך חסר לחלוטין — לא מחליף ערך קיים
+    // ✅ fallback רק אם הערך חסר לחלוטין
     if (!settings.maamValue) settings.maamValue = "18";
-    if (!settings.masValue) settings.masValue = "2.5";
+    if (!settings.masValue)  settings.masValue  = "5";
+
+    // ✅ סנכרון TaxValues — מבטיח שתמיד עדכני מ-Settings
+    const existingTax = await TaxValues.findOne();
+    const taxUpdate = { maamValue: settings.maamValue, masValue: settings.masValue };
+    if (existingTax) {
+      await TaxValues.findByIdAndUpdate(existingTax._id, { $set: taxUpdate });
+    } else {
+      await TaxValues.create(taxUpdate);
+    }
+
     return res.status(200).json(settings);
   } catch (e) {
     return res.status(500).json({ message: e.message });
@@ -87,6 +98,21 @@ export const updateMySettings = async (req, res) => {
     if (sendingOptions !== undefined) settings.sendingOptions = sendingOptions;
 
     await settings.save();
+
+    // ✅ סנכרון TaxValues — תמיד מעודכן מ-Settings כמקור האמת היחיד
+    if (maamValue !== undefined || masValue !== undefined) {
+      const existing = await TaxValues.findOne();
+      const update = {
+        maamValue: settings.maamValue,
+        masValue:  settings.masValue,
+      };
+      if (existing) {
+        await TaxValues.findByIdAndUpdate(existing._id, { $set: update });
+      } else {
+        await TaxValues.create(update);
+      }
+    }
+
     return res.status(200).json({ message: "ההגדרות נשמרו בהצלחה.", settings });
   } catch (e) {
     return res.status(500).json({ message: e.message });
