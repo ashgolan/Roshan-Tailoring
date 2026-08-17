@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCrud } from "../hooks/useCrud";
 import { bidsApi, inventoriesApi, taxValuesApi, settingsApi } from "../api";
@@ -126,6 +126,7 @@ function printBid(bid, settings, maam) {
 
 // ─── BidModal ──────────────────────────────────────────────────
 function BidModal({ initial, onClose, onSave, inventories, maam, theme, S, allClients }) {
+  const mouseDownTarget = useRef(null);
   const isEdit = !!initial?._id;
   const [bidType, setBidType] = useState(initial ? (initial.freeBid ? "free" : "items") : "items");
   const [form, setForm] = useState({
@@ -182,7 +183,8 @@ function BidModal({ initial, onClose, onSave, inventories, maam, theme, S, allCl
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--bg-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16, backdropFilter: "blur(2px)" }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
+      onMouseDown={e => { mouseDownTarget.current = e.target; }}
+      onMouseUp={e => { if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: "var(--bg-modal)", borderRadius: 16, width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto", padding: 28, boxShadow: "var(--shadow-modal)", direction: "rtl", border: "1px solid var(--border)" }}>
         <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-1)", marginBottom: 20 }}>
           {isEdit ? "עריכת הצעת מחיר" : "הצעת מחיר חדשה"}
@@ -311,6 +313,7 @@ function BidModal({ initial, onClose, onSave, inventories, maam, theme, S, allCl
 
 // ─── ViewModal ─────────────────────────────────────────────────
 function ViewModal({ bid, onClose, onToggleApprove, theme, settings, maam }) {
+  const mouseDownTarget = useRef(null);
   const isFree = bid.freeBid;
   const totalBeforeTax = toNum(bid.totalAmount);
   const taxAmount      = totalBeforeTax * maam / 100;
@@ -318,7 +321,8 @@ function ViewModal({ bid, onClose, onToggleApprove, theme, settings, maam }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--bg-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16, backdropFilter: "blur(2px)" }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
+      onMouseDown={e => { mouseDownTarget.current = e.target; }}
+      onMouseUp={e => { if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: "var(--bg-modal)", borderRadius: 16, width: "100%", maxWidth: 560, maxHeight: "88vh", overflowY: "auto", padding: 28, boxShadow: "var(--shadow-modal)", direction: "rtl", border: "1px solid var(--border)" }}>
 
         <div style={{ borderBottom: `2px solid ${theme.primary}`, paddingBottom: 16, marginBottom: 20 }}>
